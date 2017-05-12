@@ -1,3 +1,3 @@
 ## Welcome to My Blog
 
-[MySQL](https://zhengyunfeng.github.io/mysql/mysql)
+[MySQL](https://zhengyunfeng.github.io/mysql/index)
