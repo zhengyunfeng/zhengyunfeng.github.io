@@ -296,4 +296,4 @@ MySQL处理UNION的策略是先创建临时表，然后再把各个查询结果�
 
 
 
-###### [back to MySQL](https://github.com/zhengyunfeng/zhengyunfeng.github.io/mysql/mysql.md)
+###### [back to MySQL](https://zhengyunfeng.github.io/mysql/index)
