@@ -1,6 +1,6 @@
 # PHP
 
-### [PHP面向对象的若干特性](https://zhengyunfeng.github.io/php/oo.md)
+### [PHP面向对象的若干特性](https://zhengyunfeng.github.io/php/oo)
 
 
 
