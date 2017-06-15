@@ -309,7 +309,7 @@ new testA(); //不再调用__autoload()，输出autoload by class testB function
 
 另外，SPL函数很丰富，可以提供更多功能，如spl_autoload_unregister()注销已经注册的函数、spl_autoload_functions()返回所有已经注册的函数等
 
-扩展：[laravel中composer的自动加载机制](http://zhengyunfeng.github.io/php/composer_autoload/)
+扩展：[laravel中composer的自动加载机制](http://zhengyunfeng.github.io/php/composer_autoload)
 
 
 
