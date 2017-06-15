@@ -243,11 +243,74 @@ $foo1->doStuff('1');  //执行的是doStuffForString()方法
 $foo1->doStuff(1);    //执行的是doStuffForInt()方法
 ```
 
-# __autoload()
+# __autoload()和spl_autoload
 
 首先要说的是，__autoload()不是一个类方法，而是一个单独的函数，也就是说，可以在任何类声明之外声明这个函数。如果实现了这个函数，它将在实例化一个没有被声明的类时自动调用。
 
-spl_autoload
+```
+// testA.php文件
+class testA{
+	public function __construct() {
+		echo "testA constructed";
+	}
+}
+
+// 同级目录下新建testB.php文件
+function __autoload($className) {
+	$classPath = "./" . $className . ".php";
+	if (file_exists($classPath)) {
+		require_once($classPath);
+	}
+}
+
+new testA(); // 输出testA constructed
+```
+
+testB文件中，没有require testA类，但是却可以new成功，就是因为autoload方法中require_once了testA文件。
+
+PHP5.1.2后，增加了spl_autoload系列方法，SPL是Standard PHP Library(标准PHP库)的缩写。它是PHP5引入的一个扩展库，其主要功能包括autoload机制的实现及包括各种Iterator接口或类。SPL autoload机制的实现是通过将函数指针autoload_func指向自己实现的具有自动装载功能的函数来实现的。
+
+核心是spl_autoload_register方法，看下这个方法的定义：
+
+bool spl_autoload_register ([ callback $autoload_function ] ) 
+
+参数autoload_function表示要注册的自动装载函数，可以是类名::函数名或者array(类名,函数名)的形式。
+
+把上面例子中的testB文件改一下：
+
+```
+function __autoload($className) {
+	echo "autoload by function __autoload \r\n";
+	$classPath = "./" . $className . ".php";
+	if (file_exists($classPath)) {
+		require_once($classPath);
+	}
+}
+
+class testB {
+	public static function autoload($className) {
+		echo "autoload by class testB function autoload \r\n";
+		$classPath = "./" . $className . ".php";
+		if (file_exists($classPath)) {
+			require_once($classPath);
+		}
+	}
+}
+
+spl_autoload_register(array('testB', 'autoload'));
+
+new testA(); //不再调用__autoload()，输出autoload by class testB function autoload
+
+```
+
+那么，为什么在__autoload后，又要定义一个spl_autoload来取代它呢？
+
+文档里有这么句话：spl_autoload_register 可以很好地处理需要多个加载器的情况，这种情况下 spl_autoload_register 会按顺序依次调用之前注册过的加载器。作为对比， __autoload 因为是一个函数，所以只能被定义一次。
+
+另外，SPL函数很丰富，可以提供更多功能，如spl_autoload_unregister()注销已经注册的函数、spl_autoload_functions()返回所有已经注册的函数等
+
+扩展：[laravel中composer的自动加载机制](http://zhengyunfeng.github.io/php/composer_autoload/)
+
 
 
 ###### [back to PHP](https://zhengyunfeng.github.io/php/index)
