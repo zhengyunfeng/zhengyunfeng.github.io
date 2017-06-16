@@ -312,5 +312,203 @@ new testA(); //不再调用__autoload()，输出autoload by class testB function
 扩展：[laravel中composer的自动加载机制](http://zhengyunfeng.github.io/php/composer_autoload)
 
 
+# __toString()
+
+__toString()方法在直接输出对象引用时自动调用的。前面我们讲过对象引用是一个指针，比如说：$p = new Person()中，$p就是一个引用，我们不能使用echo直接输出$p, 这样会输出"Catchable fatal error: Object of class Person could not be converted to string"这样的错误，如果你在类里面定义了__toString()方法，在直接输出对象引用的时候，就不会产生错误，而是自动调用了__toString()方法
+
+```
+class testA{
+	public $a;
+	public $b;
+
+	public function __toString() {
+		return(var_export($this, TRUE)); //var_export打印类中所有的属性
+	}
+
+}
+
+echo new testA();
+```
+
+# 反射
+
+PHP 5 具有完整的反射 API，添加了对类、接口、函数、方法和扩展进行反向工程的能力。 此外，反射 API提供了方法来取出函数、类和方法中的文档注释。详细API文档见http://php.net/manual/zh/intro.reflection.php
+
+这里不多说反射的用法。我们都知道依赖注入里边用到了反射，这里简单写个反射实现依赖注入的例子
+
+```
+/**
+ *
+ * 工具类，使用该类来实现自动依赖注入。
+ *
+ */
+class Ioc {
+    // 获得类的对象实例
+    public static function getInstance($className) {
+
+        $paramArr = self::getMethodParams($className);
+
+        return (new ReflectionClass($className))->newInstanceArgs($paramArr);
+    }
+
+    /**
+     * 执行类的方法
+     * @param  [type] $className  [类名]
+     * @param  [type] $methodName [方法名称]
+     * @param  [type] $params     [额外的参数]
+     * @return [type]             [description]
+     */
+    public static function make($className, $methodName, $params = []) {
+
+        // 获取类的实例
+        $instance = self::getInstance($className);
+
+        // 获取该方法所需要依赖注入的参数
+        $paramArr = self::getMethodParams($className, $methodName);
+
+        return $instance->{$methodName}(...array_merge($paramArr, $params));
+    }
+
+    /**
+     * 获得类的方法参数，只获得有类型的参数
+     * @param  [type] $className   [description]
+     * @param  [type] $methodsName [description]
+     * @return [type]              [description]
+     */
+    protected static function getMethodParams($className, $methodsName = '__construct') {
+
+        // 通过反射获得该类
+        $class = new ReflectionClass($className);
+        $paramArr = []; // 记录参数，和参数类型
+
+        // 判断该类是否有构造函数
+        if ($class->hasMethod($methodsName)) {
+            // 获得构造函数
+            $construct = $class->getMethod($methodsName);
+
+            // 判断构造函数是否有参数
+            $params = $construct->getParameters();
+
+            if (count($params) > 0) {
+
+                // 判断参数类型
+                foreach ($params as $key => $param) {
+
+                    if ($paramClass = $param->getClass()) {
+
+                        // 获得参数类型名称
+                        $paramClassName = $paramClass->getName();
+
+                        // 获得参数类型
+                        $args = self::getMethodParams($paramClassName);
+                        $paramArr[] = (new ReflectionClass($paramClass->getName()))->newInstanceArgs($args);
+                    }
+                }
+            }
+        }
+
+        return $paramArr;
+    }
+}
+```
+
+再定义三个类
+
+```
+class A {
+    protected $cObj;
+
+    /**
+     * 用于测试多级依赖注入 B依赖A，A依赖C
+     * @param C $c [description]
+     */
+    public function __construct(C $c) {
+        $this->cObj = $c;
+    }
+
+    public function aa() {
+        echo 'this is A->test';
+    }
+
+    public function aac() {
+        $this->cObj->cc();
+    }
+}
+
+class B {
+    protected $aObj;
+
+    /**
+     * 测试构造函数依赖注入
+     * @param A $a [使用引来注入A]
+     */
+    public function __construct(A $a) {
+        $this->aObj = $a;
+    }
+
+    /**
+     * [测试方法调用依赖注入]
+     * @param  C      $c [依赖注入C]
+     * @param  string $b [这个是自己手动填写的参数]
+     * @return [type]    [description]
+     */
+    public function bb(C $c, $b) {
+        $c->cc();
+        echo "\r\n";
+        echo 'params:' . $b;
+    }
+
+    /**
+     * 验证依赖注入是否成功
+     * @return [type] [description]
+     */
+    public function bbb() {
+        $this->aObj->aac();
+    }
+}
+
+class C {
+    public function cc() {
+        echo 'this is C->cc';
+    }
+}
+```
+
+实际调用的代码是：
+
+```
+// 使用Ioc来创建B类的实例，B的构造函数依赖A类，A的构造函数依赖C类。
+$bObj = Ioc::getInstance('B');
+
+// 打印$bObj
+var_dump($bObj);
+
+Ioc::make('B', 'bb', ['this is param b']);
+```
+
+输出为：
+
+```
+// var_dump($bObj)的输出
+object(B)#3 (1) {
+  ["aObj":protected]=>
+  object(A)#7 (1) {
+    ["cObj":protected]=>
+    object(C)#10 (0) {
+    }
+  }
+}
+
+// Ioc::make('B', 'bb', ['this is param b'])的输出
+this is C->cc
+params:this is param b
+```
+
+可以看到实例化B对象时，自动将其依赖的A和C都实例化了。这段代码的核心在getMethodParams方法递归地获取并实例化__construct方法的参数。实际的依赖注入中对反射的使用比这个例子复杂得多，这里只是说明一下原理。
+
+补充（控制反转和依赖注入）：
+- 当调用者需要被调用者的协助时，在传统的程序设计过程中，通常由调用者来创建被调用者的实例，但在这里，创建被调用者的工作不再由调用者来完成，而是将被调用者的创建移到调用者的外部，从而反转被调用者的创建，消除了调用者对被调用者创建的控制，因此称为控制反转。
+
+- 要实现控制反转，通常的解决方案是将创建被调用者实例的工作交由 IoC 容器来完成，然后在调用者中注入被调用者（通过构造器/方法注入实现），这样我们就实现了调用者与被调用者的解耦，该过程被称为依赖注入。
 
 ###### [back to PHP](https://zhengyunfeng.github.io/php/index)
