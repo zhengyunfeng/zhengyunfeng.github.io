@@ -1,4 +1,6 @@
-# static
+# PHP面向对象的若干特性
+
+## static
 
 ### 声明静态属性和方法
 static关键字的作用，通常是用来声明静态属性和方法，其特点为无需实例化即可被访问到，static属性在内存中只有一份，为所有的实例共用。
@@ -67,7 +69,7 @@ B::test();
 
 这就是延迟静态绑定，正式些的定义是：该特性允许在一个静态继承的上下文中对一个被调用类的引用。说白了就是父类可使用子类重载的方法，在上面的例子中，改成static后，父类的test使用了子类的echoClass方法。
 
-# 引用
+## 引用
 
 在PHP中，引用的意思是：不同的名字访问同一个变量内容。与Ｃ语言中的指针是有差别的，Ｃ语言中的指针里面存储的是变量的内容在内存中存放的地址，而PHP中，你可以打印一下&$a试试。
 
@@ -180,7 +182,7 @@ $b = $a; // $a与$b都是指向同一内存地址　而并不是$a与$b占用不
 $a = "EFG"; // 由于$a与$b所指向的内存的数据要重新写一次了，此时Zend核心会自动判断，自动为$b生产一个$a的数据拷贝，重新申请一块内存进行存储
 ```
 
-# __call()和重载
+## __call()和重载
 
 通常所说的重载，是指函数名相同但函数的参数列表不同(包括参数个数和参数类型)的情况，这两点对于PHP而言，都无法实现：你可以对函数多添加参数，只是相当于多传了个临时变量，而且PHP传参数不区分类型。那么，PHP怎么实现类似重载的功能呢？
 
@@ -243,7 +245,7 @@ $foo1->doStuff('1');  //执行的是doStuffForString()方法
 $foo1->doStuff(1);    //执行的是doStuffForInt()方法
 ```
 
-# __autoload()和spl_autoload
+## __autoload()和spl_autoload
 
 首先要说的是，__autoload()不是一个类方法，而是一个单独的函数，也就是说，可以在任何类声明之外声明这个函数。如果实现了这个函数，它将在实例化一个没有被声明的类时自动调用。
 
@@ -312,7 +314,7 @@ new testA(); //不再调用__autoload()，输出autoload by class testB function
 扩展：[laravel中composer的自动加载机制](http://zhengyunfeng.github.io/php/composer_autoload)
 
 
-# __toString()
+## __toString()
 
 __toString()方法在直接输出对象引用时自动调用的。前面我们讲过对象引用是一个指针，比如说：$p = new Person()中，$p就是一个引用，我们不能使用echo直接输出$p, 这样会输出"Catchable fatal error: Object of class Person could not be converted to string"这样的错误，如果你在类里面定义了__toString()方法，在直接输出对象引用的时候，就不会产生错误，而是自动调用了__toString()方法
 
@@ -330,7 +332,7 @@ class testA{
 echo new testA();
 ```
 
-# 反射
+## 反射
 
 PHP 5 具有完整的反射 API，添加了对类、接口、函数、方法和扩展进行反向工程的能力。 此外，反射 API提供了方法来取出函数、类和方法中的文档注释。详细API文档见http://php.net/manual/zh/intro.reflection.php
 
