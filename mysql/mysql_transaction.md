@@ -1,4 +1,5 @@
 # mysql事务
+
 ### 事务
 
 所谓事务，它是一个操作序列，这些操作要么都执行，要么都不执行，它是一个不可分割的工作单位。MySQL提供了两种事务型的存储引擎：InnoDB和NDB Cluster。
@@ -62,8 +63,8 @@ Serialization：事务串行化执行，隔离级别最高，牺牲了系统的�
 #### 1. 隔离性
 
 锁机制+MVCC。通过MVCC使得事务隔离级别达到了可重复读，使用锁机制消除了幻读，实现了事务隔离。
-MVCC全称Mutli Version Concurreny Control，多版本并发控制，也可称之为一致性非锁定读；它通过行的多版本控制方式来读取当前执行时间数据库中的行数据。实质上使用的是快照数据。参考[MySQL InnoDB引擎 MVCC并发控制](http://blog.csdn.net/tb3039450/article/details/66472579)
-InnoDB在可重复读的事务隔离级别下消除了幻读，功劳应该归于Next-key Lock锁。参考[MySQL InnoDB中的行锁 Next-Key Lock消除幻读](http://blog.csdn.net/tb3039450/article/details/66475638)
+MVCC全称Mutli Version Concurreny Control，多版本并发控制，也可称之为一致性非锁定读；它通过行的多版本控制方式来读取当前执行时间数据库中的行数据。实质上使用的是快照数据。参考[《MySQL InnoDB引擎 MVCC并发控制》](http://blog.csdn.net/tb3039450/article/details/66472579)
+InnoDB在可重复读的事务隔离级别下消除了幻读，功劳应该归于Next-key Lock锁。参考[《MySQL InnoDB中的行锁 Next-Key Lock消除幻读》](http://blog.csdn.net/tb3039450/article/details/66475638)
 
 #### 2. 持久性和原子性
 
